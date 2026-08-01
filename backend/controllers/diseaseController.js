@@ -22,10 +22,10 @@ const createDisease = async (req, res) => {
 
     // Call Flask API
     const flaskResponse = await axios.post(
-      "http://127.0.0.1:5001/predict",
-      {
-        symptoms,
-      }
+     "https://hospital-disease-prediction-system-1.onrender.com/predict",
+     {
+     symptoms,
+     }
     );
 
     console.log(

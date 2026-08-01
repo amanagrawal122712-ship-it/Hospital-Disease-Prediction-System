@@ -2,16 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Predict = () => {
-
-  // ================= Prediction =================
-
   const [symptoms, setSymptoms] = useState([]);
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [recommendedDoctors, setRecommendedDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // ================= Appointment =================
 
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -23,159 +18,154 @@ const Predict = () => {
   useEffect(() => {
     fetchSymptoms();
   }, []);
-
-  // ================= Fetch Symptoms =================
+    // ================= Fetch Symptoms =================
 
   const fetchSymptoms = async () => {
     try {
-
       const res = await axios.get(
-      "https://hospital-disease-prediction-system.onrender.com/api/disease/symptoms"
+        "https://hospital-disease-prediction-system.onrender.com/api/disease/symptoms"
       );
 
       setSymptoms(res.data.symptoms || []);
-
     } catch (error) {
-
-      console.log(error);
-
+      console.log("Fetch Symptoms Error:", error);
     }
   };
+
   // ================= Handle Checkbox =================
 
-const handleCheckbox = (symptom) => {
+  const handleCheckbox = (symptom) => {
+    if (selectedSymptoms.includes(symptom)) {
+      setSelectedSymptoms(
+        selectedSymptoms.filter((item) => item !== symptom)
+      );
+    } else {
+      if (selectedSymptoms.length >= 5) {
+        alert("You can select maximum 5 symptoms.");
+        return;
+      }
 
-  if (selectedSymptoms.includes(symptom)) {
+      setSelectedSymptoms([...selectedSymptoms, symptom]);
+    }
+  };
 
-    setSelectedSymptoms(
-      selectedSymptoms.filter((item) => item !== symptom)
-    );
+  // ================= Predict Disease =================
 
-  } else {
-
-    if (selectedSymptoms.length >= 5) {
-      alert("You can select maximum 5 symptoms.");
+  const predictDisease = async () => {
+    if (selectedSymptoms.length === 0) {
+      alert("Please select at least one symptom.");
       return;
     }
 
-    setSelectedSymptoms([
-      ...selectedSymptoms,
-      symptom,
-    ]);
-
-  }
-
-};
-
-// ================= Predict Disease =================
-
-const predictDisease = async () => {
-
-  if (selectedSymptoms.length === 0) {
-    alert("Please select at least one symptom.");
-    return;
-  }
-
-  try {
-
-    setLoading(true);
+    try {
+      setLoading(true);
 
       const response = await axios.post(
-      "https://hospital-disease-prediction-system.onrender.com/api/disease",
-      {
-        symptoms: selectedSymptoms,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+        "https://hospital-disease-prediction-system.onrender.com/api/disease",
+        {
+          symptoms: selectedSymptoms,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Prediction Response:", response.data);
+
+      // Save complete disease object
+      setPrediction(response.data.disease);
+
+      const diseaseName =
+        response.data.prediction ||
+        response.data.disease?.diseaseName;
+
+      if (diseaseName) {
+        const doctorResponse = await axios.get(
+          `https://hospital-disease-prediction-system.onrender.com/api/doctor/recommend/${encodeURIComponent(
+            diseaseName
+          )}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRecommendedDoctors(
+          doctorResponse.data.doctors || []
+        );
       }
-    );
+    } catch (error) {
+      console.log("Prediction Error:", error);
 
-    setPrediction(response.data.disease);
-
-    const diseaseName =
-      response.data.disease.diseaseName;
-
-     const doctorResponse = await axios.get(
-     `https://hospital-disease-prediction-system.onrender.com/api/doctor/recommend/${encodeURIComponent(
-      diseaseName
-     )}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      if (error.response) {
+        console.log("Status:", error.response.status);
+        console.log("Data:", error.response.data);
       }
-    );
 
-    setRecommendedDoctors(
-      doctorResponse.data.doctors || []
-    );
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert("Prediction failed.");
-
-  } finally {
-
-    setLoading(false);
-
-  }
-};
-   // ================= Book Appointment =================
-
-const bookAppointment = async () => {
-
-  try {
-
-    if (!appointmentDate) {
-      alert("Please select appointment date.");
-      return;
+      alert(
+        error.response?.data?.message ||
+          "Prediction failed."
+      );
+    } finally {
+      setLoading(false);
     }
+  };
+    // ================= Book Appointment =================
 
-    await axios.post(
-      "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
-      {
-        doctor: selectedDoctor._id,
-        appointmentDate,
-        symptoms: appointmentSymptoms,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+  const bookAppointment = async () => {
+    try {
+      if (!appointmentDate) {
+        alert("Please select appointment date.");
+        return;
       }
-    );
 
-    alert("Appointment booked successfully.");
+      await axios.post(
+        "https://hospital-disease-prediction-system.onrender.com/api/appointment",
+        {
+          doctor: selectedDoctor._id,
+          appointmentDate,
+          symptoms: appointmentSymptoms,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setShowAppointmentForm(false);
-    setAppointmentDate("");
-    setAppointmentSymptoms("");
+      alert("Appointment booked successfully.");
 
-  } catch (error) {
+      setShowAppointmentForm(false);
+      setAppointmentDate("");
+      setAppointmentSymptoms("");
+    } catch (error) {
+      console.log("Booking Error:", error);
 
-    console.log(error);
-    alert("Booking failed.");
+      if (error.response) {
+        console.log(error.response.data);
+      }
 
-  }
-};
-return (
+      alert(
+        error.response?.data?.message ||
+        "Booking failed."
+      );
+    }
+  };
+  return (
   <div className="min-h-screen bg-gray-100 py-10 px-5">
-
     <div className="max-w-7xl mx-auto">
 
-      <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-700 px-2">
+      <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-700">
         AI Disease Prediction System
       </h1>
 
-      <p className="text-center text-gray-600 mt-2 mb-8 px-2 text-sm md:text-base">
+      <p className="text-center text-gray-600 mt-2 mb-8">
         Select up to 5 symptoms to predict disease and get doctor recommendations.
       </p>
-      
-      
+
       {/* ================= Symptoms ================= */}
 
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -187,12 +177,10 @@ return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
 
           {symptoms.map((symptom) => (
-
             <label
               key={symptom}
               className="flex items-center gap-2 border rounded-lg p-3 hover:bg-blue-50 cursor-pointer"
             >
-
               <input
                 type="checkbox"
                 checked={selectedSymptoms.includes(symptom)}
@@ -204,7 +192,6 @@ return (
               </span>
 
             </label>
-
           ))}
 
         </div>
@@ -214,7 +201,7 @@ return (
           <button
             onClick={predictDisease}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto px-10 py-3 rounded-lg text-lg font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg text-lg font-semibold"
           >
             {loading ? "Predicting..." : "Predict Disease"}
           </button>
@@ -226,18 +213,17 @@ return (
       {/* ================= Loader ================= */}
 
       {loading && (
-
         <div className="flex justify-center mt-10">
 
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
 
         </div>
-
       )}
+
+      {/* Prediction Result starts below */}
             {/* ================= Prediction Result ================= */}
 
       {prediction && (
-
         <div className="mt-10 bg-white rounded-xl shadow-lg p-8">
 
           <h2 className="text-3xl font-bold text-green-700 mb-8">
@@ -266,15 +252,13 @@ return (
 
                 <div className="flex flex-wrap gap-2">
 
-                  {prediction.symptoms.map((item, index) => (
-
+                  {prediction.symptoms?.map((item, index) => (
                     <span
                       key={index}
                       className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full"
                     >
                       {item.replace(/_/g, " ")}
                     </span>
-
                   ))}
 
                 </div>
@@ -295,20 +279,12 @@ return (
 
                 <ul className="list-disc ml-6 space-y-2">
 
-                  {prediction.medicines.length > 0 ? (
-
+                  {prediction.medicines?.length > 0 ? (
                     prediction.medicines.map((medicine, index) => (
-
-                      <li key={index}>
-                        {medicine}
-                      </li>
-
+                      <li key={index}>{medicine}</li>
                     ))
-
                   ) : (
-
                     <li>No medicines available.</li>
-
                   )}
 
                 </ul>
@@ -323,20 +299,12 @@ return (
 
                 <ul className="list-disc ml-6 space-y-2">
 
-                  {prediction.precautions.length > 0 ? (
-
+                  {prediction.precautions?.length > 0 ? (
                     prediction.precautions.map((item, index) => (
-
-                      <li key={index}>
-                        {item}
-                      </li>
-
+                      <li key={index}>{item}</li>
                     ))
-
                   ) : (
-
                     <li>No precautions available.</li>
-
                   )}
 
                 </ul>
@@ -355,20 +323,12 @@ return (
 
             <ul className="list-disc ml-6 space-y-2">
 
-              {prediction.diet.length > 0 ? (
-
+              {prediction.diet?.length > 0 ? (
                 prediction.diet.map((item, index) => (
-
-                  <li key={index}>
-                    {item}
-                  </li>
-
+                  <li key={index}>{item}</li>
                 ))
-
               ) : (
-
                 <li>No diet recommendation available.</li>
-
               )}
 
             </ul>
@@ -376,12 +336,10 @@ return (
           </div>
 
         </div>
-
       )}
             {/* ================= Recommended Doctors ================= */}
 
       {recommendedDoctors.length > 0 && (
-
         <div className="mt-10">
 
           <h2 className="text-3xl font-bold text-blue-700 mb-6">
@@ -415,17 +373,29 @@ return (
 
                 <div className="space-y-2">
 
-                  <p><strong>🏥 Hospital:</strong> {doctor.hospital}</p>
+                  <p>
+                    <strong>🏥 Hospital:</strong> {doctor.hospital}
+                  </p>
 
-                  <p><strong>⭐ Rating:</strong> {doctor.rating}</p>
+                  <p>
+                    <strong>⭐ Rating:</strong> {doctor.rating}
+                  </p>
 
-                  <p><strong>💼 Experience:</strong> {doctor.experience} Years</p>
+                  <p>
+                    <strong>💼 Experience:</strong> {doctor.experience} Years
+                  </p>
 
-                  <p><strong>💰 Fees:</strong> ₹{doctor.fees}</p>
+                  <p>
+                    <strong>💰 Fees:</strong> ₹{doctor.fees}
+                  </p>
 
-                  <p><strong>📞 Phone:</strong> {doctor.phone}</p>
+                  <p>
+                    <strong>📞 Phone:</strong> {doctor.phone}
+                  </p>
 
-                  <p><strong>📍 City:</strong> {doctor.city}</p>
+                  <p>
+                    <strong>📍 City:</strong> {doctor.city}
+                  </p>
 
                 </div>
 
@@ -449,13 +419,10 @@ return (
           </div>
 
         </div>
-
       )}
-
-      {/* ================= Appointment Popup ================= */}
+            {/* ================= Appointment Popup ================= */}
 
       {showAppointmentForm && (
-
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
 
           <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-[95%] max-w-md">
@@ -480,9 +447,7 @@ return (
               type="date"
               className="w-full border rounded-lg p-3 mt-2 mb-5"
               value={appointmentDate}
-              onChange={(e) =>
-                setAppointmentDate(e.target.value)
-              }
+              onChange={(e) => setAppointmentDate(e.target.value)}
             />
 
             <label className="font-semibold">
@@ -502,9 +467,7 @@ return (
 
               <button
                 className="flex-1 bg-gray-500 text-white py-3 rounded-lg"
-                onClick={() =>
-                  setShowAppointmentForm(false)
-                }
+                onClick={() => setShowAppointmentForm(false)}
               >
                 Cancel
               </button>
@@ -521,13 +484,10 @@ return (
           </div>
 
         </div>
-
       )}
 
     </div>
-
-  </div> 
-
+  </div>
 );
 
 };

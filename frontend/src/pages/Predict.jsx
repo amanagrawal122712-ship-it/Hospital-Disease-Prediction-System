@@ -30,7 +30,7 @@ const Predict = () => {
     try {
 
       const res = await axios.get(
-        "http://localhost:5001/symptoms"
+      "https://hospital-disease-prediction-system.onrender.com/api/disease/symptoms"
       );
 
       setSymptoms(res.data.symptoms || []);
@@ -80,8 +80,8 @@ const predictDisease = async () => {
 
     setLoading(true);
 
-    const response = await axios.post(
-      "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
+      const response = await axios.post(
+      "https://hospital-disease-prediction-system.onrender.com/api/disease",
       {
         symptoms: selectedSymptoms,
       },

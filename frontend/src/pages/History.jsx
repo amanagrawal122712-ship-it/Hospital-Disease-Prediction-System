@@ -9,9 +9,11 @@ function History() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.get(
-        "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
-        {
+      
+
+         const res = await axios.get(
+         "https://hospital-disease-prediction-system.onrender.com/api/disease",
+         {
           headers: {
             Authorization: `Bearer ${token}`,
           },

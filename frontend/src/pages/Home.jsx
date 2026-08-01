@@ -1,9 +1,9 @@
-import Footer from "../components/layout/Footer";
-import Testimonials from "../components/home/Testimonials";
-import Stats from "../components/home/Stats";
-import Features from "../components/home/Features";
-import Navbar from "../components/Navbar";
-import Hero from "../components/home/Hero";
+import Footer from "../components/Layout/Footer";
+import Testimonials from "../components/Home/Testimonials";
+import Stats from "../components/Home/Stats";
+import Features from "../components/Home/Features";
+import Navbar from "../components/Layout/Navbar";
+import Hero from "../components/Home/Hero";
 
 function Home() {
   return (

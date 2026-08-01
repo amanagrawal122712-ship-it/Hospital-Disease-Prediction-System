@@ -42,7 +42,7 @@ function NearbyHospitals() {
     try {
 
       const response = await axios.get(
-        `http://localhost:8000/api/hospital/nearby?lat=${lat}&lng=${lng}`,
+        "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,

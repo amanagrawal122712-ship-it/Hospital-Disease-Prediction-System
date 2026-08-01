@@ -14,7 +14,7 @@ const MyAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8000/api/appointment",
+        "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,

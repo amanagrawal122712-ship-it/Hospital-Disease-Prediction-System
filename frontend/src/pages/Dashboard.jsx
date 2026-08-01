@@ -48,7 +48,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:8000/api/disease/dashboard",
+       "https://hospital-disease-prediction-system.onrender.com/api/....",
         {
           headers: {
             Authorization: `Bearer ${token}`,

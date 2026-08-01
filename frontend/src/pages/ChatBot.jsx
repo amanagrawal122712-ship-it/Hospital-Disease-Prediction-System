@@ -17,7 +17,7 @@ const ChatBot = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/chat",
+       "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
         {
           message,
         }

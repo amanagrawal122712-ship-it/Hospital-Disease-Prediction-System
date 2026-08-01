@@ -10,7 +10,7 @@ function History() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:8000/api/disease",
+        "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -38,7 +38,7 @@ function History() {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        `http://localhost:8000/api/disease/${id}`,
+        "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,

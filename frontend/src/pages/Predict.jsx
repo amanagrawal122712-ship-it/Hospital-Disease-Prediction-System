@@ -81,7 +81,7 @@ const predictDisease = async () => {
     setLoading(true);
 
     const response = await axios.post(
-      "http://localhost:8000/api/disease",
+      "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
       {
         symptoms: selectedSymptoms,
       },
@@ -97,10 +97,10 @@ const predictDisease = async () => {
     const diseaseName =
       response.data.disease.diseaseName;
 
-    const doctorResponse = await axios.get(
-      `http://localhost:8000/api/doctor/recommend/${encodeURIComponent(
-        diseaseName
-      )}`,
+     const doctorResponse = await axios.get(
+     `https://hospital-disease-prediction-system.onrender.com/api/doctor/recommend/${encodeURIComponent(
+      diseaseName
+     )}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -136,7 +136,7 @@ const bookAppointment = async () => {
     }
 
     await axios.post(
-      "http://localhost:8000/api/appointment",
+      "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
       {
         doctor: selectedDoctor._id,
         appointmentDate,

@@ -10,7 +10,7 @@ function Profile() {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          "http://localhost:8000/api/auth/profile",
+          "https://hospital-disease-prediction-system.onrender.com/api/disease/history",
           {
             headers: {
               Authorization: `Bearer ${token}`,

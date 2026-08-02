@@ -11,12 +11,12 @@ function History() {
 
       
 
-         const res = await axios.get(
-         "https://hospital-disease-prediction-system.onrender.com/api/disease",
-         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+         await axios.delete(
+         `https://hospital-disease-prediction-system.onrender.com/api/disease/${id}`,
+          {
+         headers: {
+         Authorization: `Bearer ${token}`,
+         },
         }
       );
 
